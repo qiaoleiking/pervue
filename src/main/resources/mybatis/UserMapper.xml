@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiaolei.pervue.mapper.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.qiaolei.pervue.entity.User">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="phone" property="phone" />
+        <result column="telephone" property="telephone" />
+        <result column="address" property="address" />
+        <result column="enabled" property="enabled" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="userface" property="userface" />
+        <result column="remark" property="remark" />
+        <result column="sex" property="sex" />
+        <result column="province" property="province" />
+        <result column="city" property="city" />
+        <result column="district" property="district" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, phone, telephone, address, enabled, username, password, userface, remark, sex, province, city, district
+    </sql>
+
+   <resultMap id="voMap" type="com.qiaolei.pervue.entity.UserVo" extends="BaseResultMap">
+        <result column="provinceName" property="provinceName"></result>
+        <result column="cityName" property="cityName"></result>
+        <result column="districtName" property="districtName"></result>
+
+       <result column="rids" property="rids"></result>
+       <result column="rnames" property="rnames"></result>
+       <result column="rnameZhs" property="rnameZhs"></result>
+
+   </resultMap>
+
+    <select id="selectPageVo" resultMap="voMap">
+             select
+		    u.*,p.province provinceName,
+            IF(c.city = '' ,p.province,c.city) cityName,
+            IF(d.district='',d.city,d.district) districtName,
+
+						GROUP_CONCAT(r.id) rids,
+						GROUP_CONCAT(r.`name`) rnames,
+						GROUP_CONCAT(r.nameZh) rnameZhs
+
+            from user u
+            LEFT JOIN nation p on u.province = p.id
+            LEFT JOIN nation c on u.city = c.id
+            LEFT JOIN nation d on u.district = d.id
+						LEFT JOIN user_role ur on u.id = ur.uid
+						LEFT JOIN role r on ur.rid = r.id
+
+                        <where>
+                            <if test="vo!=null">
+                                <if test="vo.name != null and vo.name !=''">
+                                    and u.name like concat('%',#{vo.name},'%')
+                                </if>
+
+                                <if test="vo.phone != null and vo.phone != ''">
+                                    and u.phone = #{vo.phone}
+                                </if>
+                            </if>
+                        </where>
+			GROUP by u.id
+    </select>
+
+</mapper>
